@@ -1,9 +1,13 @@
 package dev.lockedthread.blayze.blayzecore.utils;
 
+import dev.lockedthread.blayze.blayzecore.commands.BCommand;
+import dev.lockedthread.blayze.blayzecore.commands.executor.BCommandExecutor;
+import dev.lockedthread.blayze.blayzecore.commands.tabcomplete.TabCompletable;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandMap;
 import org.bukkit.command.PluginCommand;
+import org.bukkit.command.TabCompleter;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.SimplePluginManager;
 
@@ -39,7 +43,7 @@ public class CommandMapUtil {
 
     public void unregisterCommands(Plugin plugin) {
         final CommandMap commandMap = getCommandMap();
-        for (Command command : getCommands().values()) {
+        for (Command command : getCommandMap().getKnownCommands().values()) {
             PluginCommand pluginCommand = Bukkit.getPluginCommand(command.getName());
             if (pluginCommand != null && pluginCommand.getPlugin().getName().equals(plugin.getName())) {
                 command.unregister(commandMap);
@@ -47,8 +51,12 @@ public class CommandMapUtil {
         }
     }
 
-    public void registerCommand(Plugin plugin, String... aliases) {
-        getCommandMap().register(plugin.getDescription().getName(), getPluginCommand(plugin, aliases));
+    public <T extends BCommand> void registerCommand(Plugin plugin, T bCommand) {
+        PluginCommand pluginCommand = getPluginCommand(plugin, bCommand);
+        if (bCommand instanceof TabCompletable) {
+            pluginCommand.setTabCompleter((TabCompleter) bCommand);
+        }
+        getCommandMap().register(plugin.getDescription().getName(), pluginCommand);
     }
 
     @SuppressWarnings("unchecked")
@@ -68,10 +76,12 @@ public class CommandMapUtil {
         }
     }
 
-    private PluginCommand getPluginCommand(Plugin plugin, String... aliases) {
+    private PluginCommand getPluginCommand(Plugin plugin, BCommand bCommand) {
         try {
+            String[] aliases = bCommand.getAliases();
             PluginCommand pluginCommand = commandConstructor.newInstance(aliases[0], plugin);
             pluginCommand.setAliases(Arrays.asList(Arrays.copyOfRange(aliases, 1, aliases.length)));
+            pluginCommand.setExecutor(BCommandExecutor.getInstance());
             return pluginCommand;
         } catch (IllegalAccessException | InstantiationException | InvocationTargetException e) {
             throw new RuntimeException("Unable to get PluginCommand. Please contact LockedThread.", e);

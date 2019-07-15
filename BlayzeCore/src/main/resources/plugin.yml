@@ -1,0 +1,4 @@
+name: BlayzeCore
+main: dev.lockedthread.blayze.blayzecore.BlayzeCore
+version: 1.0-SNAPSHOT
+author: LockedThread

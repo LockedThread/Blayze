@@ -11,8 +11,13 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 public abstract class BCommand {
+
+    private Map<String, BCommand> subCommands;
 
     public abstract void execute(CommandSender commandSender, String label, String[] arguments);
 
@@ -30,7 +35,15 @@ public abstract class BCommand {
             hasPermission = permission == null || commandSender.hasPermission(permission);
         }
         if (hasPermission) {
-            execute(commandSender, label, arguments);
+            if (hasSubCommands()) {
+                String[] args = arguments.length == 0 ? arguments : Arrays.copyOfRange(arguments, 0, arguments.length);
+                BCommand bCommand = subCommands.get(arguments[0].toLowerCase());
+                if (bCommand != null) {
+                    bCommand.perform(commandSender, arguments[0], args);
+                }
+            } else {
+                execute(commandSender, label, arguments);
+            }
         } else {
             sendMessage(commandSender, Messages.COMMAND_NO_PERMISSION.getMessage("{command}", "/" + label));
         }
@@ -53,12 +66,7 @@ public abstract class BCommand {
     }
 
     public boolean isPlayerOnly() {
-        PlayerOnly playerOnly = getClass().getAnnotation(PlayerOnly.class);
-        if (playerOnly != null) {
-            return true;
-        } else {
-            return false;
-        }
+        return getClass().getAnnotation(PlayerOnly.class) != null;
     }
 
     @NotNull
@@ -83,6 +91,29 @@ public abstract class BCommand {
         return null;
     }
 
+    public void addSubCommands(BCommand... bCommands) {
+        for (BCommand bCommand : bCommands) {
+            for (String alias : bCommand.getAliases()) {
+                getSubCommands().put(alias.toLowerCase(), bCommand);
+            }
+        }
+    }
+
+    @Nullable
+    public Map<String, BCommand> getSubCommands(boolean checkNullity) {
+        return subCommands == null ? checkNullity ? (subCommands = new HashMap<>()) : null : subCommands;
+    }
+
+    public boolean hasSubCommands() {
+        return subCommands != null && !subCommands.isEmpty();
+    }
+
+    @NotNull
+    public Map<String, BCommand> getSubCommands() {
+        //noinspection ConstantConditions
+        return getSubCommands(true);
+    }
+
     @Target(ElementType.TYPE)
     @Retention(RetentionPolicy.RUNTIME)
     public @interface Name {
@@ -95,8 +126,17 @@ public abstract class BCommand {
         String permission();
     }
 
+
+    @Target(ElementType.TYPE)
+    @Retention(RetentionPolicy.RUNTIME)
+    public @interface Description {
+        String description();
+    }
+
     @Target(ElementType.TYPE)
     @Retention(RetentionPolicy.RUNTIME)
     public @interface PlayerOnly {
     }
+
+
 }

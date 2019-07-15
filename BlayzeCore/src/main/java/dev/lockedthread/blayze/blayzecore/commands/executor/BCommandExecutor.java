@@ -14,7 +14,7 @@ import java.util.Set;
 
 public class BCommandExecutor implements CommandExecutor {
 
-    public static BCommandExecutor instance;
+    private static BCommandExecutor instance;
 
     private final Map<String, BCommand> COMMAND_MAP = new HashMap<>();
 
@@ -23,16 +23,24 @@ public class BCommandExecutor implements CommandExecutor {
         BCommand bCommand = COMMAND_MAP.get(label.toLowerCase());
         if (bCommand != null) {
             bCommand.perform(commandSender, label, args);
+        } else {
+            throw new RuntimeException("This shouldn't happen, report to LockedThread if you see this.");
         }
-        throw new RuntimeException("This shouldn't happen, report to LockedThread if you see this.");
+        return true;
     }
 
     public void loadCommand(Module module, BCommand bCommand) {
         String[] aliases = bCommand.getAliases();
-        CommandMapUtil.getInstance().registerCommand(module, aliases);
+        CommandMapUtil.getInstance().registerCommand(module, bCommand);
         module.getCommandSet().add(bCommand);
         for (String alias : aliases) {
             COMMAND_MAP.put(alias.toLowerCase(), bCommand);
+        }
+    }
+
+    public void loadCommands(Module module, BCommand... bCommands) {
+        for (BCommand bCommand : bCommands) {
+            loadCommand(module, bCommand);
         }
     }
 
