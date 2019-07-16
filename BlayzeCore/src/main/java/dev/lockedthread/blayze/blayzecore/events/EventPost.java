@@ -3,6 +3,7 @@ package dev.lockedthread.blayze.blayzecore.events;
 import dev.lockedthread.blayze.blayzecore.module.Module;
 import org.bukkit.event.Event;
 import org.bukkit.event.EventPriority;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.LinkedList;
 import java.util.function.Consumer;
@@ -10,39 +11,43 @@ import java.util.function.Predicate;
 
 public class EventPost<T extends Event> {
 
-    private boolean disabled = false;
-    private Class<T> eventClass;
-    private LinkedList<Predicate<T>> filters;
+    private final Class<T> eventClass;
+    protected LinkedList<Predicate<T>> filters;
     private EventPriority eventPriority;
     private Consumer<T> eventConsumer;
 
     private EventPost(Class<T> eventClass, EventPriority eventPriority) {
         this.eventClass = eventClass;
         this.eventPriority = eventPriority;
-        this.filters = new LinkedList<>();
     }
 
+    @NotNull
     public static <T extends Event> EventPost<T> of(Class<T> eventClass, EventPriority eventPriority) {
         return new EventPost<>(eventClass, eventPriority);
     }
 
+    @NotNull
     public static <T extends Event> EventPost<T> of(Class<T> eventClass) {
         return new EventPost<>(eventClass, EventPriority.NORMAL);
     }
 
+    @NotNull
     public EventPost<T> filter(Predicate<T> event) {
-        filters.add(event);
+        getFilters().add(event);
         return this;
     }
 
+    @NotNull
     LinkedList<Predicate<T>> getFilters() {
-        return filters;
+        return filters == null ? filters = new LinkedList<>() : filters;
     }
 
+    @NotNull
     Class<? extends Event> getEventClass() {
         return eventClass;
     }
 
+    @NotNull
     public EventPoster handle(Consumer<T> event) {
         this.eventConsumer = event;
         return plugin -> {
@@ -54,6 +59,7 @@ public class EventPost<T extends Event> {
         };
     }
 
+    @NotNull
     EventPriority getEventPriority() {
         return eventPriority;
     }
@@ -62,15 +68,9 @@ public class EventPost<T extends Event> {
         this.eventPriority = eventPriority;
     }
 
+    @NotNull
     Consumer<T> getEventConsumer() {
         return eventConsumer;
     }
 
-    public boolean isDisabled() {
-        return disabled;
-    }
-
-    public void setDisabled(boolean disabled) {
-        this.disabled = disabled;
-    }
 }

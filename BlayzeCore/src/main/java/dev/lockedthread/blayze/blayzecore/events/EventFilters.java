@@ -1,5 +1,6 @@
 package dev.lockedthread.blayze.blayzecore.events;
 
+import dev.lockedthread.blayze.blayzecore.menus.Menu;
 import dev.lockedthread.blayze.blayzecore.utils.Utils;
 import org.bukkit.Material;
 import org.bukkit.event.Cancellable;
@@ -7,6 +8,8 @@ import org.bukkit.event.Event;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryEvent;
 import org.bukkit.event.player.*;
 import org.bukkit.inventory.ItemStack;
 
@@ -17,19 +20,20 @@ public class EventFilters {
     private static final Predicate<PlayerMoveEvent> IGNORE_SAME_BLOCK = event -> event.getFrom().getX() != event.getTo().getX() && event.getFrom().getZ() != event.getTo().getZ() && event.getFrom().getY() != event.getTo().getY();
     private static final Predicate<PlayerMoveEvent> IGNORE_SAME_CHUNK = event -> event.getFrom().getChunk().getX() != event.getTo().getChunk().getX() && event.getFrom().getChunk().getZ() != event.getTo().getChunk().getZ();
     private static final Predicate<? extends Cancellable> IGNORE_CANCELLED = cancellable -> !cancellable.isCancelled();
-    //private static final Predicate<? extends InventoryEvent> IGNORE_NON_MENUS = (Predicate<InventoryEvent>) event -> event instanceof InventoryClickEvent ? ((InventoryClickEvent) event).getClickedInventory() != null && ((InventoryClickEvent) event).getClickedInventory().getHolder() instanceof Menu : event.getInventory() != null && event.getInventory().getHolder() instanceof Menu;
+    private static final Predicate<? extends InventoryEvent> IGNORE_NON_MENUS = (Predicate<InventoryEvent>) event -> event instanceof InventoryClickEvent ? ((InventoryClickEvent) event).getClickedInventory() != null && ((InventoryClickEvent) event).getClickedInventory().getHolder() instanceof Menu : event.getInventory().getHolder() instanceof Menu;
     private static final Predicate<? extends Event> IGNORE_HAND_NULL = event -> {
         if (event instanceof PlayerBucketEmptyEvent) {
-            return ((PlayerBucketEmptyEvent) event).getItemStack() != null;
+            ItemStack itemStack = ((PlayerBucketEmptyEvent) event).getItemStack();
+            return itemStack != null && itemStack.getType() != Material.AIR;
         } else if (event instanceof PlayerInteractEvent) {
-            return ((PlayerInteractEvent) event).getItem() != null;
+            ItemStack itemStack = ((PlayerInteractEvent) event).getItem();
+            return itemStack != null && itemStack.getType() != Material.AIR;
         } else if (event instanceof PlayerEvent) {
-            return ((PlayerEvent) event).getPlayer().getItemInHand() != null;
+            return ((PlayerEvent) event).getPlayer().getItemInHand().getType() != Material.AIR;
         } else if (event instanceof BlockBreakEvent) {
-            final ItemStack itemInHand = ((BlockBreakEvent) event).getPlayer().getItemInHand();
-            return itemInHand != null && itemInHand.getType() != Material.AIR;
+            return ((BlockBreakEvent) event).getPlayer().getItemInHand().getType() != Material.AIR;
         } else if (event instanceof BlockPlaceEvent) {
-            return ((BlockPlaceEvent) event).getItemInHand() != null;
+            return ((BlockPlaceEvent) event).getItemInHand().getType() != Material.AIR;
         }
         return false;
     };
@@ -90,9 +94,9 @@ public class EventFilters {
         return (Predicate<T>) IGNORE_HAND_META_NULL;
     }
 
-    /*public static <T extends InventoryEvent> Predicate<T> getIgnoreNonMenus() {
+    public static <T extends InventoryEvent> Predicate<T> getIgnoreNonMenus() {
         return (Predicate<T>) IGNORE_NON_MENUS;
-    }*/
+    }
 
     public static <T extends Cancellable> Predicate<T> getIgnoreCancelled() {
         return (Predicate<T>) IGNORE_CANCELLED;

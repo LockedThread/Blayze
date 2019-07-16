@@ -1,17 +1,17 @@
 package dev.lockedthread.blayze.blayzecore.events;
 
-import dev.lockedthread.blayze.blayzecore.module.Module;
 import org.bukkit.event.Event;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.EventExecutor;
 import org.bukkit.plugin.Plugin;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.function.Predicate;
 
 public class EventPostExecutor<T extends Event> implements EventExecutor, Listener {
 
-    private EventPost<T> eventPost;
-    private Plugin plugin;
+    private final EventPost<T> eventPost;
+    private final Plugin plugin;
 
     public EventPostExecutor(EventPost<T> eventPost, Plugin plugin) {
         this.eventPost = eventPost;
@@ -24,21 +24,15 @@ public class EventPostExecutor<T extends Event> implements EventExecutor, Listen
 
     @SuppressWarnings("unchecked")
     @Override
-    public void execute(Listener listener, Event event) {
-        if (eventPost.isDisabled()) {
-            if (plugin instanceof Module) {
-                ((Module) plugin).getEventPosts().remove(eventPost);
-            }
-            event.getHandlers().unregister(this);
-            return;
-        }
-
+    public void execute(@NotNull Listener listener, Event event) {
         if (!event.getClass().equals(eventPost.getEventClass())) {
             return;
         }
-        for (Predicate<T> filter : eventPost.getFilters()) {
-            if (!filter.test((T) event)) {
-                return;
+        if (eventPost.filters != null) {
+            for (Predicate<T> filter : eventPost.getFilters()) {
+                if (!filter.test((T) event)) {
+                    return;
+                }
             }
         }
         T eventInstance = (T) eventPost.getEventClass().cast(event);
