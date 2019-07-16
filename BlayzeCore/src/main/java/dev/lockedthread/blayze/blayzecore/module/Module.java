@@ -36,17 +36,19 @@ public abstract class Module extends JavaPlugin {
     @Override
     public void onDisable() {
         disable();
-        CommandMapUtil.getInstance().unregisterCommands(this);
-        for (BCommand bCommand : commandSet) {
-            bCommand.getSubCommands().clear();
+        if (commandSet != null) {
+            CommandMapUtil.getInstance().unregisterCommands(this);
+            for (BCommand bCommand : commandSet) {
+                bCommand.getSubCommands().clear();
+            }
+            commandSet.clear();
         }
-        commandSet.clear();
         if (units != null) {
             for (Unit unit : units) {
                 unit.getCallBack().call();
             }
+            this.units = null;
         }
-        this.units = null;
         ENABLED_MODULES.remove(this);
     }
 
