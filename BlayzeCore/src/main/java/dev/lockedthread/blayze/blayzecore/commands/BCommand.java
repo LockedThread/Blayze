@@ -35,8 +35,8 @@ public abstract class BCommand {
             hasPermission = permission == null || commandSender.hasPermission(permission);
         }
         if (hasPermission) {
-            if (hasSubCommands()) {
-                String[] args = arguments.length == 0 ? arguments : Arrays.copyOfRange(arguments, 0, arguments.length);
+            if (hasSubCommands() && arguments.length > 0) {
+                String[] args = Arrays.copyOfRange(arguments, 0, arguments.length - 1);
                 BCommand bCommand = subCommands.get(arguments[0].toLowerCase());
                 if (bCommand != null) {
                     bCommand.perform(commandSender, arguments[0], args);
@@ -87,6 +87,15 @@ public abstract class BCommand {
         Permission annotation = getClass().getAnnotation(Permission.class);
         if (annotation != null) {
             return annotation.permission();
+        }
+        return null;
+    }
+
+    @Nullable
+    public String getDescription() {
+        Description annotation = getClass().getAnnotation(Description.class);
+        if (annotation != null) {
+            return annotation.description();
         }
         return null;
     }
