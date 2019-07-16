@@ -18,7 +18,7 @@ import java.util.function.Consumer;
 
 public class CustomItem {
 
-    private static Map<String, CustomItem> CUSTOM_ITEM_MAP = new HashMap<>();
+    private static final Map<String, CustomItem> CUSTOM_ITEM_MAP = new HashMap<>();
 
     private final String moduleName;
     private final String name;
