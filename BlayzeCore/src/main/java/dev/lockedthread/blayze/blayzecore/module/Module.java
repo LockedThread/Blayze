@@ -45,7 +45,9 @@ public abstract class Module extends JavaPlugin {
         }
         if (units != null) {
             for (Unit unit : units) {
-                unit.getCallBack().call();
+                if (unit.getCallBack() != null) {
+                    unit.getCallBack().call();
+                }
             }
             this.units = null;
         }
