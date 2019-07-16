@@ -6,9 +6,11 @@ import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Predicate;
 
 public abstract class Menu implements InventoryHolder {
 
@@ -24,6 +26,21 @@ public abstract class Menu implements InventoryHolder {
             this.inventory = Bukkit.createInventory(this, slots, ChatColor.translateAlternateColorCodes('&', name));
         }
         this.menuItemMap = new HashMap<>();
+    }
+
+    @Nullable
+    public MenuItem getMenuItem(int index) {
+        return menuItemMap.get(index);
+    }
+
+    @Nullable
+    public Map.Entry<Integer, MenuItem> getMenuItemWhere(Predicate<MenuItem> predicate) {
+        for (Map.Entry<Integer, MenuItem> entry : menuItemMap.entrySet()) {
+            if (predicate.test(entry.getValue())) {
+                return entry;
+            }
+        }
+        return null;
     }
 
     public void setMenuItem(int index, MenuItem menuItem) {
