@@ -8,7 +8,7 @@ import java.util.List;
 
 @BCommand.Name(aliases = {"customitem", "customitems", "blayzeitems", "blayzeitem"})
 @BCommand.Permission(permission = "blayzecore.customitem.")
-@BCommand.Description(description = "Gives players items")
+@BCommand.Description(description = "Manages CustomItems")
 public class CommandCustomItem extends BCommand implements TabCompletable {
 
     public CommandCustomItem() {
@@ -17,11 +17,7 @@ public class CommandCustomItem extends BCommand implements TabCompletable {
 
     @Override
     public void execute(CommandSender commandSender, String label, String[] arguments) {
-        if (arguments.length == 0) {
-            commandSender.sendMessage(ChatColor.translateAlternateColorCodes('&', ""));
-        } else if (arguments.length == 2) {
-
-        }
+        commandSender.sendMessage(ChatColor.translateAlternateColorCodes('&', ""));
     }
 
     @Override

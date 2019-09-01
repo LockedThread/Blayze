@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @BCommand.Name(aliases = "give")
+@BCommand.Description(description = "Gives CustomItems")
 public class CommandCustomItemGive extends BCommand implements TabCompletable {
 
     @Override
